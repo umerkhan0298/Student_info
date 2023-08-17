@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Student Information</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
+</head>
+
+<body>
+    <style>
+        body {
+            background-color: aquamarine;
+        }
+
+        .center {
+            border: 5px solid;
+            text-align: center;
+            background-color: aqua;
+        }
+
+        #studentForm input {
+            border: 1px solid black;
+            margin-bottom: 10px;
+            width: 100%;
+            left: 50%;
+        }
+
+        .btn-primary {
+            margin-top: 10px;
+        }
+
+        .centered-table {
+            width: 100%;
+            text-align: center;
+            /* Center-align the table content horizontally */
+            border-collapse: collapse;
+            /* Optional: To collapse borders between cells */
+            border: 10px darkgreen
+        }
+
+        .centered-table td {
+            padding: 5px;
+            /* Optional: Add padding to cells for better spacing */
+        }
+
+        .table {
+            vertical-align: 0;
+        }
+
+        #studentTable tr:nth-child(odd) {
+            background-color: rgb(105, 228, 160);
+        }
+
+        #studentTable tr:nth-child(even) {
+            background-color: rgb(59, 218, 218);
+        }
+        table tr th{
+            padding: 10px;
+        }
+
+    </style>
+
+    <div class="center">
+        <h1>Student Information Form</h1>
+    </div>
+    <div style="padding: 20px; width: 25%; margin-left: auto; margin-right: auto;">
+        <form id="studentForm">
+            <div class="form-floating mb-3">
+                <input type="text" id="name" class="form-control" name="name" required>
+                <label for="name">Name:</label>
+            </div>
+            <div class="form-floating mb-3">
+                <input type="number" id="age" class="form-control" name="age" required>
+                <label for="age">Age:</label>
+            </div>
+            <div class="form-floating mb-3">
+                <input type="number" id="class" class="form-control" name="class" required>
+                <label for="class">Class:</label>
+            </div>
+
+            <input class="btn btn-primary" type="submit" value="Submit"><br>
+        </form>
+    </div>
+
+    <h2 style="text-align: center;">Student Information</h2>
+    <div style="display: flex; justify-content: center; padding: 5px;">
+        <button id="showTable" type="button" class="btn btn-outline-success">Show Table</button><br><br>
+    </div>
+    <div style="width: 50%; margin-left: auto; margin-right: auto; border: 5px black;">
+        <table id="studentTable" class="table-bordered centered-table">
+            <tr style="background-color: rgb(36, 173, 98); padding: 5px;">
+                <th>Name</th>
+                <th>Age</th>
+                <th>Class</th>
+                <th>Update</th>
+                <th>Delete</th>
+            </tr>
+        </table>
+    </div>
+    <script>
+        const table = document.getElementById("studentTable");
+        const showButton = document.getElementById("showTable");
+        let showTableCheck = false;
+        showButton.addEventListener("click", function () {
+            if (showTableCheck) {
+                const tbody = table.querySelector("tbody");
+                const table_row = tbody.querySelectorAll("tr");
+                for (i = 1; i < table_row.length; i++) {
+                    tbody.removeChild(table_row[i]);
+                }
+                showTableCheck = false;
+                showButton.textContent = "Show Table";
+            }
+            else {
+                fetch("/show_table", {
+                    method: "GET"
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                        show_table(data, table);
+                        showTableCheck = true;
+                        showButton.textContent = "Hide Table";
+                    })
+                    .catch(error => {
+                        console.error("Error:", error);
+                    });
+            }
+        });
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            const form = document.getElementById("studentForm");
+            const table = document.getElementById("studentTable");
+
+            form.addEventListener("submit", function (event) {
+                event.preventDefault();
+
+                const name = form.elements["name"].value;
+                const age = form.elements["age"].value;
+                const studentClass = form.elements["class"].value;
+                $.ajax({
+                    type: "POST",
+                    url: "/login",
+                    data: JSON.stringify({
+                        "name": name,
+                        "age": age,
+                        "class": studentClass
+                    }),
+                    contentType: "application/json",
+                    success: function (result) {
+                        show_table(result, table);
+                        showTableCheck = true;
+                        showButton.textContent = "Hide Table";
+                    },
+                    error: function (error) {
+                        console.error("Error:", error);
+                    }
+                });
+
+                form.reset();
+            });
+        });
+    </script>
+    <script>
+        function show_table(result, table) {
+            const tbody = table.querySelector("tbody");         // clean the table
+            const table_row = tbody.querySelectorAll("tr");
+            for (i = 1; i < table_row.length; i++) {
+                tbody.removeChild(table_row[i]);
+            }
+            console.log("result", result);
+            for (let i = 0; i < result.length; i++) {
+                const newRow = table.insertRow(-1);
+                const nameCell = newRow.insertCell(0);
+                const ageCell = newRow.insertCell(1);
+                const classCell = newRow.insertCell(2);
+                const updateCell = newRow.insertCell(3);
+                const deleteCell = newRow.insertCell(4);
+                nameCell.textContent = result[i].name;
+                // newRow.style.background = "#0f0"
+                ageCell.textContent = result[i].age;
+                classCell.textContent = result[i].class_id;
+                const updateButton = document.createElement("button");
+                updateButton.textContent = "Update";
+                updateButton.classList.add("btn", "btn-primary");
+                updateButton.style.marginTop = 0;
+                updateButton.addEventListener("click", function () {
+                    const id = result[i].id;
+                    window.location.href = `/update/${id}`;
+                });
+                updateCell.appendChild(updateButton);
+
+                const deleteButton = document.createElement("button");
+                deleteButton.textContent = "Delete";
+                deleteButton.classList.add("btn", "btn-danger");
+                deleteButton.addEventListener("click", function () {
+                    delete_entry_from_db(result[i].id);
+                    console.log("Delete button clicked for:", result[i].name);
+                    newRow.remove(); // This line removes the row from the table
+                });
+                deleteCell.appendChild(deleteButton);
+            }
+        }
+        function delete_entry_from_db(student_id) {
+            $.ajax({
+                type: "POST",
+                url: "/delete_entry",
+                data: JSON.stringify({
+                    "id": student_id
+                }),
+                contentType: "application/json",
+                success: function (result) {
+                    console.log(result)
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

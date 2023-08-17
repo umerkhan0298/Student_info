@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
+
+</head>
+
+<body>
+    <style>
+        body {
+            background-color: aquamarine;
+        }
+        .center {
+            border: 5px solid;
+            text-align: center;
+            background-color: aqua;
+        }
+        #studentForm input {
+            border: 1px solid black;
+            margin-bottom: 10px;
+            width: 100%;
+            left: 50%;
+        }
+
+        .btn-primary {
+            margin-top: 10px;
+        }
+    </style>
+    <h1 class="center">Update The Information</h1>
+    <div style="padding: 20px; width: 25%; margin-left: auto; margin-right: auto;" id="studentForm">
+        <div class="form-floating mb-3">
+            <input type="text" id="name" class="form-control" name="name" required>
+            <label for="name">Name:</label>
+        </div>
+        <div class="form-floating mb-3">
+            <input type="number" id="age" class="form-control" name="age" required>
+            <label for="age">Age:</label>
+        </div>
+        <div class="form-floating mb-3">
+            <input type="number" id="class" class="form-control" name="class" required>
+            <label for="class">Class:</label>
+        </div>
+        <button class="btn btn-primary" onclick="submit_updated_data()"> Submit </button>
+    </div>
+    <script>
+        function submit_updated_data() {
+            const name = document.getElementById("name").value;
+            const age = document.getElementById("age").value;
+            const class_id = document.getElementById("class").value;
+            $.ajax({
+                type: "POST",
+                url: '/update/{{id}}',
+                data: JSON.stringify({
+                    "name": name,
+                    "age": age,
+                    "class": class_id
+                }),
+                contentType: "application/json",
+                success: function (result) {
+                    console.log(result)
+                    window.location.href= "/"
+                },
+                error: function (error) {
+                    console.error("Error:", error);
+                }
+            });
+
+        }
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
